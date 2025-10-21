@@ -3,14 +3,14 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import Logo from './Logo'
-import { v4 as uuidv4 } from 'uuid';
-import PasswordsTable from './PasswordsTable';
 import PasswordsCards from './PassWordCards';
 // import { json } from 'express';
 function PassManager() {
+
     const [form, setform] = useState({ site: "", username: "", password: "" })
     const [showPass, setShowPass] = useState(false)
     const [passwordArray, setpasswordArray] = useState([])
+    
     // //For Storing in Local Storage
     // useEffect(() => {
     //     let passwords = localStorage.getItem("passwords");
@@ -21,15 +21,25 @@ function PassManager() {
 
     //For Storing in MongoDb
     const getPasswords = async () => {
-        let req = await fetch("http://localhost:3000/")
+        const token = localStorage.getItem("token");
+        let req = await fetch("http://localhost:3000/api/passwords", {
+            headers: {
+                "Authorization": `Bearer ${token}`
+            }
+        });
         let passwords = await req.json()
         setpasswordArray(passwords)
         console.log(passwords)
     }
 
     useEffect(() => {
-        getPasswords()
-    }, [])
+        const token = localStorage.getItem("token");
+        if (!token) {
+            window.location.href = "/login";
+            return;
+        }
+        getPasswords();
+    }, []);
     // //Deleting from local storage
     // const confirmDelete = (index) => {
     //     const updatedArray = passwordArray.filter((_, i) => i !== index);
@@ -41,14 +51,25 @@ function PassManager() {
     //Deleting from mongodb
     const confirmDelete = async (id) => {
         try {
-            const res = await fetch(`http://localhost:3000/${id}`, {
+            const token = localStorage.getItem("token");
+            const res = await fetch(`http://localhost:3000/api/passwords/${id}`, {
                 method: "DELETE",
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
             });
+
             const data = await res.json();
 
             if (res.ok) {
                 toast.success(data.message || "Deleted successfully");
-                getPasswords(); // refresh list after delete
+
+                // ✅ remove the deleted one instantly from local state
+                setpasswordArray((prev) => prev.filter((item) => item._id !== id));
+
+
+                // ✅ then re-fetch the latest data for accuracy
+                // await getPasswords();
             } else {
                 toast.error(data.message || "Delete failed");
             }
@@ -59,6 +80,7 @@ function PassManager() {
             toast.dismiss();
         }
     };
+
     // // function to delete an item from local
     // const handleDelete = (index) => {
     //     toast.warn(
@@ -114,28 +136,43 @@ function PassManager() {
     }
 
     const savePassword = async () => {
-        // check if all fields are filled
         const allFilled = Object.values(form).every(
             (value) => value && value.trim() !== ""
         );
 
         if (!allFilled) {
             toast.error("Please fill all fields before saving");
-            return; // stop here if any field is empty
+            return;
         }
 
-        // save new password
-        const updatedPasswords = [...passwordArray, { ...form, id: uuidv4() }];
-        setpasswordArray(updatedPasswords);
-        //FOr Saving in MongoDb
-        let res = await fetch("http://localhost:3000/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) })
-        // // For Saving in Local Storage
-        // localStorage.setItem("passwords", JSON.stringify(updatedPasswords));
+        try {
+            const token = localStorage.getItem("token");
+            const res = await fetch("http://localhost:3000/api/passwords", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify(form)
+            });
 
-        // clear input fields after saving
-        setform({ site: "", username: "", password: "" });
+            const data = await res.json();
 
-        toast.success("Password saved successfully");
+            if (res.ok) {
+                toast.success("Password saved successfully");
+
+                // ✅ Refresh with real MongoDB data
+                await getPasswords();
+
+                // ✅ clear input fields
+                setform({ site: "", username: "", password: "" });
+            } else {
+                toast.error(data.message || "Save failed");
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error("Server error while saving");
+        }
     };
     return (
         <section className='md:container md:mx-auto  py-10 px-4  flex flex-col gap-10 '>

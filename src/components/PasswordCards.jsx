@@ -31,7 +31,10 @@ function PasswordsCards({ passwordArray, onDelete }) {
       <div className="grid justify-center sm:grid-cols-2 md:grid-cols-3 gap-4">
         {passwordArray.map((item, index) => (
           <div
-            key={index}
+            key={item._id}
+            id={item._id}
+            site={item.site}
+
             className="bg-green-100 rounded-lg p-4 shadow hover:shadow-md transition duration-300 flex flex-col gap-2"
           >
             {/* Site */}
