@@ -3,7 +3,7 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import Logo from './Logo'
-import PasswordsCards from './PassWordCards';
+import PasswordsCards from './PasswordCards';
 // import { json } from 'express';
 function PassManager() {
 

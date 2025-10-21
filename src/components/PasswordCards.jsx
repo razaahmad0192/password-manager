@@ -4,7 +4,7 @@ import { MdDelete } from "react-icons/md";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { toast } from 'react-toastify';
 
-function PasswordsCards({ passwordArray, onDelete }) {
+function PasswordCards({ passwordArray, onDelete }) {
   const [visiblePasswords, setVisiblePasswords] = useState({});
 
   const togglePassword = (index) => {
@@ -111,4 +111,4 @@ function PasswordsCards({ passwordArray, onDelete }) {
   );
 }
 
-export default PasswordsCards;
+export default PasswordCards;
