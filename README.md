@@ -1,4 +1,4 @@
-# 🔐 Password Manager (PassOp)
+# 🔐 Password Manager (LockSafe)
 
 A secure full-stack password manager built using **Node.js**, **Express**, and **React (Vite)**.  
 It allows users to safely store, view, and manage their passwords in one place with a clean interface and strong encryption.
